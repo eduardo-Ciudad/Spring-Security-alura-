@@ -1,8 +1,11 @@
 package br.com.forum_hub.controller;
 
 import br.com.forum_hub.domain.autenticacao.DadosLogin;
+import br.com.forum_hub.domain.autenticacao.DadosRefreshToken;
+import br.com.forum_hub.domain.autenticacao.DadosToken;
 import br.com.forum_hub.domain.autenticacao.TokenService;
 import br.com.forum_hub.domain.usuario.Usuario;
+import br.com.forum_hub.domain.usuario.UsuarioRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,17 +21,32 @@ public class AutenticacaoController {
 
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
-    public AutenticacaoController(AuthenticationManager authenticationManager, TokenService tokenService) {
+    private final UsuarioRepository usuarioRepository;
+    public AutenticacaoController(AuthenticationManager authenticationManager, TokenService tokenService, UsuarioRepository usuarioRepository) {
         this.authenticationManager = authenticationManager;
         this.tokenService = tokenService;
+        this.usuarioRepository = usuarioRepository;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> efetuarLogin(@Valid @RequestBody DadosLogin dados){
+    public ResponseEntity<DadosToken> efetuarLogin(@Valid @RequestBody DadosLogin dados){
         var autenticationToken = new UsernamePasswordAuthenticationToken(dados.email(), dados.senha());
         var authentication = authenticationManager.authenticate(autenticationToken);
 
         String tokenacesso = tokenService.gerarToken((Usuario) authentication.getPrincipal());
-        return ResponseEntity.ok(tokenacesso);
+        String refreshToken = tokenService.gerarRefreshToken((Usuario) authentication.getPrincipal());
+        return ResponseEntity.ok(new DadosToken(tokenacesso, refreshToken));
+    }
+
+    @PostMapping("/atualizar-token")
+    public ResponseEntity<DadosToken> atualizarToken (DadosRefreshToken dados) {
+        var refreshToken = dados.refreshToken();
+        Long idUsuario = Long.valueOf(tokenService.verificarToken(refreshToken));
+        var usuario = usuarioRepository.findById(idUsuario).orElseThrow();
+
+        String tokenacesso = tokenService.gerarToken(usuario);
+        String tokenAtualizacao = tokenService.gerarRefreshToken(usuario);
+
+        return ResponseEntity.ok(new DadosToken(tokenacesso, tokenAtualizacao));
     }
 }
