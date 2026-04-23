@@ -11,15 +11,24 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
 @Configuration
 @EnableWebSecurity
 public class ConfigSegurity {
+
+    private  final FilterToken filtroToken;
+
+    public ConfigSegurity(FilterToken filtroToken) {
+        this.filtroToken = filtroToken;
+    }
 
     @Bean
     public SecurityFilterChain filtrosSeguranca(HttpSecurity http) throws Exception {
         return http
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(csrf -> csrf.disable())
+                .addFilterBefore(filtroToken, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
