@@ -1,16 +1,20 @@
 package br.com.forum_hub.domain.usuario;
 
+import jakarta.validation.Valid;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UsuarioService implements UserDetailsService {
     private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder encoder;
 
-    public UsuarioService(UsuarioRepository usuarioRepository){
+    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder encoder){
         this.usuarioRepository = usuarioRepository;
+        this.encoder = encoder;
     }
 
     @Override
@@ -19,5 +23,12 @@ public class UsuarioService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("O Usuario nao foi encontrado "));
     }
 
-  }
+    public Object cadastrar(@Valid DadosCadastroUsuario dados) {
+
+        var senhaCriptografada = encoder.encode(dados.senha());
+        var usuario = new Usuario(dados, senhaCriptografada);
+        return usuarioRepository.save(usuario);
+
+    }
+}
 
