@@ -1,6 +1,7 @@
 package br.com.forum_hub.domain.topico;
 
 import br.com.forum_hub.domain.resposta.DadosListagemResposta;
+import br.com.forum_hub.domain.usuario.Usuario;
 
 import java.time.LocalDateTime;
 import java.util.List;
