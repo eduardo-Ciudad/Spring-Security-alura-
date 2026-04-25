@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UsuarioService implements UserDetailsService {
@@ -19,11 +20,12 @@ public class UsuarioService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return usuarioRepository.findByEmailIgnoreCase(username)
+        return usuarioRepository.findByEmailIgnoreCaseAndVerificadoTrue(username)
                 .orElseThrow(() -> new UsernameNotFoundException("O Usuario nao foi encontrado "));
     }
 
-    public Object cadastrar(@Valid DadosCadastroUsuario dados) {
+    @Transactional
+    public Usuario cadastrar(@Valid DadosCadastroUsuario dados) {
 
         var senhaCriptografada = encoder.encode(dados.senha());
         var usuario = new Usuario(dados, senhaCriptografada);

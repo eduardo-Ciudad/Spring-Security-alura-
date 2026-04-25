@@ -25,7 +25,7 @@ public class UsuarioController {
     @PostMapping("/registrar")
     public ResponseEntity<DadosListagemUsuario> cadastrar(@RequestBody @Valid DadosCadastroUsuario dados, UriComponentsBuilder uriBuilder) {
         var usuario = usuarioService.cadastrar(dados);
-        var uri = uriBuilder.path("/{nomeUsuario}").buildAndExpand(usuario.getNomeUsuario).toUri();
-        return ResponseEntity.created(uri).body(new DadosListagemUsuaio(usuario));
+        var uri = uriBuilder.path("/{nomeUsuario}").buildAndExpand(usuario.getNomeUsuario()).toUri();
+        return ResponseEntity.created(uri).body(new DadosListagemUsuario(usuario));
     }
 }
