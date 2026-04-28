@@ -13,7 +13,6 @@ import java.util.UUID;
 @Entity
 @Table(name="usuarios")
 public class Usuario implements UserDetails {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,14 +22,15 @@ public class Usuario implements UserDetails {
     private String nomeUsuario;
     private String biografia;
     private String miniBiografia;
-
     private Boolean verificado;
     private String token;
     private LocalDateTime expiracaoToken;
+    private Boolean ativo;
 
+    @Deprecated
     public Usuario(){}
 
-    public Usuario(@Valid DadosCadastroUsuario dados, String senhaCriptografada) {
+    public Usuario(DadosCadastroUsuario dados, String senhaCriptografada) {
         this.nomeCompleto = dados.nomeCompleto();
         this.email = dados.email();
         this.senha = senhaCriptografada;
@@ -40,12 +40,12 @@ public class Usuario implements UserDetails {
         this.verificado = false;
         this.token = UUID.randomUUID().toString();
         this.expiracaoToken = LocalDateTime.now().plusMinutes(30);
+        this.ativo = false;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return null;
-
     }
 
     @Override
@@ -79,15 +79,37 @@ public class Usuario implements UserDetails {
     }
 
     public String getToken() {
-        return  token;
+        return token;
     }
 
     public void verificar() {
-        if(expiracaoToken.isBefore(LocalDateTime.now())) {
-            throw new RegraDeNegocioException("Link de verificacao expirou!");
+        if(expiracaoToken.isBefore(LocalDateTime.now())){
+            throw new RegraDeNegocioException("Link de verificação expirou!");
         }
         this.verificado = true;
+        this.ativo = true;
         this.token = null;
         this.expiracaoToken = null;
+    }
+
+    public void desativar() {
+        this.ativo = false;
+    }
+
+    public Usuario alterarDados(DadosEdicaoUsuario dados) {
+        if(dados.nomeUsuario() != null){
+            this.nomeUsuario = dados.nomeUsuario();
+        }
+        if(dados.miniBiografia() != null){
+            this.miniBiografia = dados.miniBiografia();
+        }
+        if(dados.biografia() != null){
+            this.biografia = dados.biografia();
+        }
+        return this;
+    }
+
+    public void alterarSenha(String senhaCriptografada) {
+        this.senha = senhaCriptografada;
     }
 }
