@@ -1,10 +1,16 @@
 package br.com.forum_hub.domain.perfil;
 
 import jakarta.persistence.*;
+import org.springframework.security.core.GrantedAuthority;
 
 @Entity
 @Table(name = "perfis")
-public class Perfil {
+public class Perfil implements GrantedAuthority {
+    @Override
+    public String getAuthority() {
+        return "ROLE" + nome ;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
