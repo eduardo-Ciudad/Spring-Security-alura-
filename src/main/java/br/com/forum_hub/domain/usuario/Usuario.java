@@ -1,6 +1,7 @@
 package br.com.forum_hub.domain.usuario;
 
 import br.com.forum_hub.domain.perfil.Perfil;
+import br.com.forum_hub.domain.perfil.PerfilNome;
 import br.com.forum_hub.infra.exception.RegraDeNegocioException;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
@@ -37,7 +38,7 @@ public class Usuario implements UserDetails {
     @Deprecated
     public Usuario(){}
 
-    public Usuario(DadosCadastroUsuario dados, String senhaCriptografada) {
+    public Usuario(DadosCadastroUsuario dados, String senhaCriptografada, Perfil perfil) {
         this.nomeCompleto = dados.nomeCompleto();
         this.email = dados.email();
         this.senha = senhaCriptografada;
@@ -48,6 +49,7 @@ public class Usuario implements UserDetails {
         this.token = UUID.randomUUID().toString();
         this.expiracaoToken = LocalDateTime.now().plusMinutes(30);
         this.ativo = false;
+        this.perfis.add(perfil);
     }
 
     @Override
