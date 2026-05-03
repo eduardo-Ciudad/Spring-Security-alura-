@@ -5,6 +5,8 @@ import br.com.forum_hub.domain.topico.TopicoService;
 import br.com.forum_hub.domain.usuario.Usuario;
 import br.com.forum_hub.infra.exception.RegraDeNegocioException;
 import jakarta.transaction.Transactional;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,10 +15,12 @@ import java.util.List;
 public class RespostaService {
     private final RespostaRepository repository;
     private final TopicoService topicoService;
+    private final RoleHierarchy roleHierarchy;
 
-    public RespostaService(RespostaRepository repository, TopicoService topicoService) {
+    public RespostaService(RespostaRepository repository, TopicoService topicoService, RoleHierarchy roleHierarchy) {
         this.repository = repository;
         this.topicoService = topicoService;
+        this.roleHierarchy = roleHierarchy;
     }
 
     @Transactional
@@ -48,15 +52,30 @@ public class RespostaService {
     }
 
     @Transactional
-    public Resposta marcarComoSolucao(Long id) {
+    public Resposta marcarComoSolucao(Long id, Usuario logado) {
         var resposta = buscarPeloId(id);
 
         var topico = resposta.getTopico();
+
+        if(usuarioTemPemissoes(logado, topico.getAutor()))
+            throw new RegraDeNegocioException("vc nao pode marcar essa resposta como solucao");
         if(topico.getStatus() == Status.RESOLVIDO)
             throw new RegraDeNegocioException("O tópico já foi solucionado! Você não pode marcar mais de uma resposta como solução.");
 
         topico.alterarStatus(Status.RESOLVIDO);
         return resposta.marcarComoSolucao();
+    }
+
+    private boolean usuarioTemPemissoes(Usuario logado, Usuario autor) {
+        for(GrantedAuthority grantedAuthority : logado.getAuthorities()) {
+            var autoridadesAlcancaveis = roleHierarchy.getReachableGrantedAuthorities(List.of(grantedAuthority));
+            for(GrantedAuthority perfil: autoridadesAlcancaveis) {
+                if(perfil.getAuthority().equals("ROLE_INSTRUTOR")|| logado.getId().equals(autor.getId()))
+                    return true;
+            }
+        }
+        return false;
+
     }
 
     @Transactional

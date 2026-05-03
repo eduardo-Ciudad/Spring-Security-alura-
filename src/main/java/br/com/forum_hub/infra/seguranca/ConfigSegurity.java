@@ -39,6 +39,10 @@ public class ConfigSegurity {
                             req.requestMatchers(HttpMethod.POST ,"/topicos").hasRole("ESTUDANTE");
                             req.requestMatchers(HttpMethod.PUT, "/topicos").hasRole("ESTUDANTE");
                             req.requestMatchers(HttpMethod.DELETE ,"/topicos/**").hasRole("ESTUDANTE");
+
+
+                            req.requestMatchers(HttpMethod.PATCH ,"/topicos/{idTopico}/resposta/**").hasAnyRole("INSTRUTOR", "ESTUDANTE");
+
                             req.requestMatchers(HttpMethod.PATCH ,"/topicos/**").hasRole("MODERADOR");
 
                             req.requestMatchers(HttpMethod.PATCH ,"/adicionar-perfil/**").hasRole("ADMIN");
