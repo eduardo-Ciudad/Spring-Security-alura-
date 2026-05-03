@@ -3,6 +3,8 @@ package br.com.forum_hub.infra.seguranca;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -47,5 +49,13 @@ public class ConfigSegurity {
     @Bean
     public AuthenticationManager atenticationManeger(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    @Bean
+    public RoleHierarchy hieraquiaPerfis(){
+    String hierarquia = "ROLE_ADMIN > ROLE_MODERADOR\n" +
+            "ROLE_MODERADOR > ROLE_INSTRUTOR\n" +
+            "ROLE_MODERADOR > ROLE_ESTUDANRE";
+        return RoleHierarchyImpl.fromHierarchy(hierarquia);
     }
 }
